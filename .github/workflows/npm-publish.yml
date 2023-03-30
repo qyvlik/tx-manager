@@ -28,9 +28,6 @@ jobs:
           mysql database: 'test'
           mysql root password: root
 
-      - name: Show MySQL In Docker
-        run: docker ps -a
-
       - name: Waiting for MySQL
         run: until nc -z 0.0.0.0 3306; do sleep 5; echo "Waiting for MySQL to come up..."; done
 
@@ -47,6 +44,6 @@ jobs:
           MYSQL_PASSWORD: root
           MYSQL_DATABASE: test
 
-#      - run: npm publish --access public
-#        env:
-#          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
