@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TestMapper">
+    <insert id="createTableIfNotExist">
+        CREATE TABLE IF NOT EXISTS `t_test` (
+            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+            `key` varchar(64) COLLATE utf8mb4_bin NOT NULL COMMENT 'value',
+            PRIMARY KEY (`id`),
+            KEY `unique_key` (`key`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+    </insert>
+
+    <select id="getByKey">
+        SELECT `id`,
+               `key`
+        FROM `t_test`
+        WHERE `key` = #{key}
+    </select>
+
+    <insert id="save">
+        INSERT INTO `t_test`
+        (`id`, `key`)
+        VALUE (0, #{key})
+    </insert>
+
+    <insert id="batchSave">
+        INSERT INTO `t_test`
+        (`id`, `key`)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (0, #{item})
+        </foreach>
+    </insert>
+
+    <select id="deleteById">
+        DELETE
+        FROM `t_test`
+        WHERE `id` = #{id}
+    </select>
+</mapper>

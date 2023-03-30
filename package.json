@@ -1,10 +1,15 @@
 {
   "name": "tx-manager",
+  "type": "module",
   "version": "0.0.1",
   "description": "NodeJS MySQL TxManagerFactory and MyBatisMapperFactory",
   "main": "src/main.js",
+  "directories": {
+    "lib": "src",
+    "test": "tests"
+  },
   "scripts": {
-    "test": "jest"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "repository": {
     "type": "git",
@@ -23,5 +28,15 @@
   "bugs": {
     "url": "https://github.com/qyvlik/tx-manager/issues"
   },
-  "homepage": "https://github.com/qyvlik/tx-manager#readme"
+  "homepage": "https://github.com/qyvlik/tx-manager#readme",
+  "devDependencies": {
+    "jest": "^29.1.2",
+    "mybatis-mapper": "^0.6.8",
+    "mysql2": "^3.0.1",
+    "uuid": "^9.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 60000
+  }
 }
