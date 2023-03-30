@@ -1,5 +1,5 @@
 {
-  "name": "tx-manager",
+  "name": "@c10k/tx-manager",
   "type": "module",
   "version": "0.0.1",
   "description": "NodeJS MySQL TxManagerFactory and MyBatisMapperFactory",
