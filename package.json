@@ -1,0 +1,27 @@
+{
+  "name": "tx-manager",
+  "version": "0.0.1",
+  "description": "NodeJS MySQL TxManagerFactory and MyBatisMapperFactory",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qyvlik/tx-manager.git"
+  },
+  "keywords": [
+    "No",
+    "NodeJS",
+    "MySQL",
+    "TxManager",
+    "MyBatisMapper",
+    "Factory"
+  ],
+  "author": "qyvlik@qq.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qyvlik/tx-manager/issues"
+  },
+  "homepage": "https://github.com/qyvlik/tx-manager#readme"
+}
