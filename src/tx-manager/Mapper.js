@@ -16,20 +16,24 @@ export default class Mapper {
         const that = this;
         for (const sqlId of Object.keys(sqlIds)) {
             this[sqlId] = async (params) => {
-                const info = await txManager.getExistConnection();
-                if (info === null) {
+                const {id, connection} = txManager.getCurrentContext();
+                if (connection === null) {
                     throw new Error(`${namespace}.${sqlId} : connection not exist, please TxManager.runQuery or TxManager.runTransaction}`)
                 }
-                const {id, connection} = info;
                 const format = {language: 'mysql', indent: '  '};
                 const sql = MybatisMapper.getStatement(namespace, sqlId, params, format);
                 const beginTime = Date.now();
                 // connection.execute will increase max_prepared_stmt_count
                 const result = await connection.query(sql);
                 const endTime = Date.now();
+                const cost = endTime - beginTime;
                 if (that.verbose) {
-                    const type = (endTime - beginTime) > slowSqlTime ? 'slow-sql' : 'sql';
-                    console.debug(`#${id} ${type}=${sql}, result=${JSON.stringify(result[0])}`);
+                    const type = cost > slowSqlTime ? 'slow-sql' : 'sql';
+                    console.debug(`#${id} cost:${cost} ms, ${type} ${sql}, result=${JSON.stringify(result[0])}`);
+                } else {
+                    if (slowSqlTime > 0 && cost > slowSqlTime) {
+                        console.debug(`#${id} cost:${cost} ms, slow-sql ${sql}`);
+                    }
                 }
                 return result;
             }

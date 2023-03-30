@@ -8,23 +8,29 @@ const testService = new TestService();
 
 test('test create table', async () => {
     {
-        const connectionId = txManager.getExistConnectionId();
-        expect(connectionId).toBeNull();
+        const {id, connection, count} = txManager.getCurrentContext();
+        expect(id).toBeNull();
+        expect(connection).toBeNull();
+        expect(count).toBeNull();
     }
 
     const result = await testService.createTableIfNotExist();
     expect(txManager.__applyCount).toBe(txManager.__closeCount);
 
     {
-        const connectionId = txManager.getExistConnectionId();
-        expect(connectionId).toBeNull();
+        const {id, connection, count} = txManager.getCurrentContext();
+        expect(id).toBeNull();
+        expect(connection).toBeNull();
+        expect(count).toBeNull();
     }
 });
 
 test('test save data and get and delete', async () => {
     {
-        const connectionId = txManager.getExistConnectionId();
-        expect(connectionId).toBeNull();
+        const {id, connection, count} = txManager.getCurrentContext();
+        expect(id).toBeNull();
+        expect(connection).toBeNull();
+        expect(count).toBeNull();
     }
 
     const uuid = uuidv4();
@@ -49,8 +55,10 @@ test('test save data and get and delete', async () => {
     expect(entity2).toBeNull();
 
     {
-        const connectionId = txManager.getExistConnectionId();
-        expect(connectionId).toBeNull();
+        const {id, connection, count} = txManager.getCurrentContext();
+        expect(id).toBeNull();
+        expect(connection).toBeNull();
+        expect(count).toBeNull();
     }
 });
 
@@ -75,7 +83,56 @@ test('test batch save', async () => {
     }
 });
 
+test('test batch save 2', async () => {
+    let index = 1;
+    const keyList = [];
+    while (index-- > 0) {
+        keyList.push(uuidv4());
+    }
+
+    const idList = await testService.batchSave(keyList);
+    expect(txManager.__applyCount).toBe(txManager.__closeCount);
+    for (const id of idList) {
+        const result1 = await testService.deleteById(id);
+        expect(txManager.__applyCount).toBe(txManager.__closeCount);
+        expect(result1).toBe(true);
+
+        const result2 = await testService.deleteById(id);
+        expect(txManager.__applyCount).toBe(txManager.__closeCount);
+        expect(result2).toBe(false);
+    }
+});
+
 test('test nest call with same mysql transaction', async () => {
+
+    const uuid = uuidv4();
+    const id = await testService.save(uuid);
+
+    try {
+        await txManager.runQuery(async (_, connectionId1) => {
+            const entity1 = await testService.getByKey(uuid);
+
+            await txManager.runQuery(async (_, connectionId2) => {
+                const entity2 = await testService.getByKey(uuid);
+
+                expect(entity1).toEqual(entity2);
+
+
+                throw new Error(`rollback by error`);
+            });
+        });
+        expect(false).toBe(true);
+    } catch (error) {
+        expect(error.message).toBe(`rollback by error`);
+    }
+
+    const result1 = await testService.deleteById(id);
+    expect(result1).toBe(true);
+    
+});
+
+
+test('test query nest with same mysql connection', async () => {
 
     const uuid1 = uuidv4();
     const uuid2 = uuidv4();
@@ -89,7 +146,9 @@ test('test nest call with same mysql transaction', async () => {
 
                 expect(connectionId1).toBe(connectionId2);
 
-                console.debug(`connectionId1=${connectionId1} == connectionId2=${connectionId2}`);
+                const {id: connectionId3} = txManager.getCurrentContext();
+
+                expect(connectionId1).toBe(connectionId3);
 
                 throw new Error(`rollback by error`);
             });
@@ -106,7 +165,15 @@ test('test nest call with same mysql transaction', async () => {
     expect(entity2).toBeNull();
 });
 
-test('test nest call with same mysql transaction', async () => {
+test('test slow sql', async () => {
+
+    testService.__mapper.verbose = false;
+
+    await testService.sleepByMySQL(2);
+
+});
+
+test('test drop table', async () => {
     await testService.dropTable();
 });
 

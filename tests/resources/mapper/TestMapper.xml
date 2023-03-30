@@ -41,4 +41,8 @@
         FROM `t_test`
         WHERE `id` = #{id}
     </select>
+
+    <select id="sleepByMySQL">
+        SELECT SLEEP(#{time})
+    </select>
 </mapper>

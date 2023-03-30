@@ -28,7 +28,7 @@ export default class TxManager {
         this.__closeCount = 0;
     }
 
-    async getContext() {
+    async __getOrCreateContext() {
         let store = this.__als.getStore();
         if (typeof store === 'undefined') {
             const connection = await this.__pool.getConnection();
@@ -47,45 +47,43 @@ export default class TxManager {
 
     async close() {
         if (this.__closeCount !== this.__applyCount) {
-            console.error(`applyCount=${this.__applyCount}, closeCount=${this.__closeCount}`);
+            console.error(`TxManager applyCount:${this.__applyCount} != closeCount:${this.__closeCount}`);
         }
-
         await this.__pool.end()
     }
 
     /**
      *
-     * @return {{connection: any, id: number, count: number}|null}
+     * @return {{connection: any|null, id: number|null, count: number|null}}
      */
-    getExistConnection() {
+    getCurrentContext() {
         const store = this.__als.getStore();
         if (typeof store !== 'undefined') {
             return store;
         }
-        return null;
+        return {connection: null, id: null, count: null};
     }
 
     /**
-     *
-     * @return {null|number}
+     * @callback TransactionCallback
+     * @param connection
+     * @param id            {number}    connection id
      */
-    getExistConnectionId() {
-        const store = this.__als.getStore();
-        if (typeof store !== 'undefined') {
-            return store.id;
-        }
-        return null;
-    }
-
+    /**
+     * Start a Transaction
+     * @param cb    {TransactionCallback}
+     * @return {Promise<unknown>}
+     */
     async runTransaction(cb) {
-        const store = await this.getContext();
+        const store = await this.__getOrCreateContext();
         return new Promise((resolve, reject) => {
             this.__als.run(store, async () => {
                 const {id, count, connection} = this.__als.getStore();
-                if (count === 0) {
-                    await connection.beginTransaction();
-                }
                 try {
+                    if (count === 0) {
+                        await connection.beginTransaction();
+                    }
+
                     const result = await cb(connection, id);
                     if (count === 0) {
                         await connection.commit();
@@ -99,8 +97,6 @@ export default class TxManager {
                 } finally {
                     if (count <= 0) {
                         this.__closeCount++;
-
-                        // you can use connection.unprepare
                         await connection.release();
                     } else {
                         store.count--;
@@ -110,8 +106,18 @@ export default class TxManager {
         });
     }
 
+    /**
+     * @callback QueueCallback
+     * @param connection
+     * @param id            {number}    connection id
+     */
+    /**
+     * Start a Queue
+     * @param cb    {QueueCallback}
+     * @return {Promise<unknown>}
+     */
     async runQuery(cb) {
-        const store = await this.getContext();
+        const store = await this.__getOrCreateContext();
         return new Promise((resolve, reject) => {
             this.__als.run(store, async () => {
                 const {id, count, connection} = this.__als.getStore();
@@ -123,7 +129,6 @@ export default class TxManager {
                 } finally {
                     if (count <= 0) {
                         this.__closeCount++;
-                        // you can use connection.unprepare
                         await connection.release();
                     } else {
                         store.count--;

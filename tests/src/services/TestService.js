@@ -2,7 +2,7 @@ import {txManager, mapperFactory} from "../config/database.js";
 
 export default class TestService {
     constructor() {
-        this.__mapper = mapperFactory.create({namespace: `TestMapper`});
+        this.__mapper = mapperFactory.create({namespace: `TestMapper`, verbose: true});
     }
 
     async createTableIfNotExist() {
@@ -64,6 +64,18 @@ export default class TestService {
         return await txManager.runTransaction(async () => {
             const [{affectedRows}] = await this.__mapper.deleteById({id});
             return affectedRows > 0;
+        });
+    }
+
+    /**
+     *
+     * @param time  {number} second
+     * @return {Promise<*>}
+     */
+    async sleepByMySQL(time) {
+        return await txManager.runQuery(async () => {
+            const [rows] = await this.__mapper.sleepByMySQL({time});
+            return txManager.getSelectOneRecord(rows);
         });
     }
 
