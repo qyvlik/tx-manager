@@ -16,10 +16,11 @@ export default class Mapper {
         const that = this;
         for (const sqlId of Object.keys(sqlIds)) {
             this[sqlId] = async (params) => {
-                const connection = await txManager.getExistConnection();
-                if (connection === null) {
+                const info = await txManager.getExistConnection();
+                if (info === null) {
                     throw new Error(`${namespace}.${sqlId} : connection not exist, please TxManager.runQuery or TxManager.runTransaction}`)
                 }
+                const {id, connection} = info;
                 const format = {language: 'mysql', indent: '  '};
                 const sql = MybatisMapper.getStatement(namespace, sqlId, params, format);
                 const beginTime = Date.now();
@@ -28,7 +29,7 @@ export default class Mapper {
                 const endTime = Date.now();
                 if (that.verbose) {
                     const type = (endTime - beginTime) > slowSqlTime ? 'slow-sql' : 'sql';
-                    console.debug(`${type}=${sql}, result=${JSON.stringify(result[0])}`);
+                    console.debug(`#${id} ${type}=${sql}, result=${JSON.stringify(result[0])}`);
                 }
                 return result;
             }

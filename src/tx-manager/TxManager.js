@@ -53,10 +53,14 @@ export default class TxManager {
         await this.__pool.end()
     }
 
+    /**
+     *
+     * @return {{connection: any, id: number, count: number}|null}
+     */
     getExistConnection() {
         const store = this.__als.getStore();
         if (typeof store !== 'undefined') {
-            return store.connection;
+            return store;
         }
         return null;
     }
@@ -75,53 +79,58 @@ export default class TxManager {
 
     async runTransaction(cb) {
         const store = await this.getContext();
+        return new Promise((resolve, reject) => {
+            this.__als.run(store, async () => {
+                const {id, count, connection} = this.__als.getStore();
+                if (count === 0) {
+                    await connection.beginTransaction();
+                }
+                try {
+                    const result = await cb(connection, id);
+                    if (count === 0) {
+                        await connection.commit();
+                    }
+                    resolve(result);
+                } catch (error) {
+                    if (count === 0) {
+                        await connection.rollback();
+                    }
+                    reject(error);
+                } finally {
+                    if (count <= 0) {
+                        this.__closeCount++;
 
-        this.__als.enterWith(store);
-
-        const {id, count, connection} = this.__als.getStore();
-        if (count === 0) {
-            await connection.beginTransaction();
-        }
-
-        try {
-            const result = await cb(connection, id);
-            if (count === 0) {
-                await connection.commit();
-            }
-            return result;
-        } catch (error) {
-            if (count === 0) {
-                await connection.rollback();
-            }
-            throw error;
-        } finally {
-            if (count <= 0) {
-                this.__closeCount++;
-
-                // you can use connection.unprepare
-                await connection.release();
-            } else {
-                store.count--;
-            }
-        }
+                        // you can use connection.unprepare
+                        await connection.release();
+                    } else {
+                        store.count--;
+                    }
+                }
+            });
+        });
     }
 
     async runQuery(cb) {
         const store = await this.getContext();
-        this.__als.enterWith(store);
-
-        const {id, count, connection} = this.__als.getStore();
-        try {
-            return await cb(connection, id);
-        } finally {
-            if (count <= 0) {
-                this.__closeCount++;
-                // you can use connection.unprepare
-                await connection.release();
-            } else {
-                store.count--;
-            }
-        }
+        return new Promise((resolve, reject) => {
+            this.__als.run(store, async () => {
+                const {id, count, connection} = this.__als.getStore();
+                try {
+                    const result = await cb(connection, id);
+                    resolve(result);
+                } catch (error) {
+                    reject(error);
+                } finally {
+                    if (count <= 0) {
+                        this.__closeCount++;
+                        // you can use connection.unprepare
+                        await connection.release();
+                    } else {
+                        store.count--;
+                    }
+                }
+            })
+        });
     }
 
     /**

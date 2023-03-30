@@ -47,6 +47,11 @@ test('test save data and get and delete', async () => {
     const entity2 = await testService.getByKey(uuid);
     expect(txManager.__applyCount).toBe(txManager.__closeCount);
     expect(entity2).toBeNull();
+
+    {
+        const connectionId = txManager.getExistConnectionId();
+        expect(connectionId).toBeNull();
+    }
 });
 
 
@@ -77,8 +82,6 @@ test('test nest call with same mysql transaction', async () => {
 
     try {
         await txManager.runTransaction(async (_, connectionId1) => {
-
-
             const id1 = await testService.save(uuid1);
 
             await txManager.runTransaction(async (_, connectionId2) => {
@@ -90,7 +93,6 @@ test('test nest call with same mysql transaction', async () => {
 
                 throw new Error(`rollback by error`);
             });
-
         });
         expect(false).toBe(true);
     } catch (error) {
