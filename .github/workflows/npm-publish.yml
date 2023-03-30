@@ -29,7 +29,7 @@ jobs:
           mysql root password: root
 
       - name: Waiting for MySQL
-        run: until nc -z 127.0.0.1 3306; do sleep 1; echo "Waiting for MySQL to come up..."; done
+        run: until nc -z 0.0.0.0 3306; do sleep 5; echo "Waiting for MySQL to come up..."; done
 
       - uses: actions/setup-node@v3
         with:
@@ -38,7 +38,7 @@ jobs:
       - run: npm install
       - run: npm test
         env:
-          MYSQL_HOST: 127.0.0.1
+          MYSQL_HOST: 0.0.0.0
           MYSQL_PORT: 3306
           MYSQL_USER: root
           MYSQL_PASSWORD: root
