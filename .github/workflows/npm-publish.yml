@@ -28,6 +28,9 @@ jobs:
           mysql database: 'test'
           mysql root password: root
 
+      - name: Waiting for MySQL
+        run: until nc -z 127.0.0.1 3306; do sleep 1; echo "Waiting for MySQL to come up..."; done
+
       - uses: actions/setup-node@v3
         with:
           node-version: 16
