@@ -12,7 +12,12 @@ export default class TestService {
         });
     }
 
-
+    async dropTable() {
+        return await txManager.runTransaction(async () => {
+            const [result] = await this.__mapper.dropTable();
+            return result;
+        });
+    }
 
     /**
      *

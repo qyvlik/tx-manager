@@ -6,7 +6,7 @@ name: Node.js Package
 on:
   push:
     branches:
-      - 'none'
+      - 'main'
 
 jobs:
   publish-npm:
@@ -32,6 +32,13 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm install
       - run: npm test
-      - run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_PORT: 3306
+          MYSQL_USER: root
+          MYSQL_PASSWORD: root
+          MYSQL_DATABASE: test
+
+#      - run: npm publish --access public
+#        env:
+#          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}

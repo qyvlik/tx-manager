@@ -89,7 +89,7 @@ test('test nest call with same mysql transaction', async () => {
 
                 expect(connectionId1).toBe(connectionId2);
 
-                console.info(`connectionId1=${connectionId1} == connectionId2=${connectionId2}`);
+                console.debug(`connectionId1=${connectionId1} == connectionId2=${connectionId2}`);
 
                 throw new Error(`rollback by error`);
             });
@@ -106,6 +106,9 @@ test('test nest call with same mysql transaction', async () => {
     expect(entity2).toBeNull();
 });
 
+test('test nest call with same mysql transaction', async () => {
+    await testService.dropTable();
+});
 
 afterAll(async () => {
     expect(txManager.__applyCount).toBe(txManager.__closeCount);

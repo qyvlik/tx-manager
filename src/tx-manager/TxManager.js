@@ -135,14 +135,14 @@ export default class TxManager {
 
     /**
      * info like `Records: 42  Duplicates: 0  Warnings: 0`
-     * @param result   {
+     * @param result   {{
      *     fieldCount: number,
      *     affectedRows: number,
      *     insertId: number,
      *     info: string,
      *     serverStatus: number,
      *     warningStatus: number
-     * }
+     * }}
      * @return {[number]}
      */
     getBatchInsertIdList(result) {
