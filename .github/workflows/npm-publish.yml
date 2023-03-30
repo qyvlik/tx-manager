@@ -28,6 +28,9 @@ jobs:
           mysql database: 'test'
           mysql root password: root
 
+      - name: Show MySQL In Docker
+        run: docker ps -a
+
       - name: Waiting for MySQL
         run: until nc -z 0.0.0.0 3306; do sleep 5; echo "Waiting for MySQL to come up..."; done
 
