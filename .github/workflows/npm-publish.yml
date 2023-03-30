@@ -20,10 +20,12 @@ jobs:
       - name: Set up MySQL
         uses: mirromutth/mysql-action@v1.1
         with:
-          character set server: 'utf8mb4' # Optional, default value is 'utf8mb4'. The '--character-set-server' option for mysqld
-          collation server: 'utf8mb4_general_bin' # Optional, default value is 'utf8mb4_general_ci'. The '--collation-server' option for mysqld
-          mysql version: '5.7' # Optional, default value is "latest". The version of the MySQL
-          mysql database: 'test' # Optional, default value is "test". The specified database which will be create
+          host port: 3306
+          container port: 3306
+          character set server: 'utf8mb4'
+          collation server: 'utf8mb4_general_bin'
+          mysql version: '5.7'
+          mysql database: 'test'
           mysql root password: root
 
       - uses: actions/setup-node@v3
