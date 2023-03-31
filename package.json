@@ -1,8 +1,8 @@
 {
   "name": "@c10k/tx-manager",
   "type": "module",
-  "version": "0.0.1",
-  "description": "NodeJS MySQL TxManagerFactory and MyBatisMapperFactory",
+  "version": "0.0.2",
+  "description": "NodeJS MySQL TxManager and MapperFactory",
   "main": "src/main.js",
   "directories": {
     "lib": "src",
